@@ -7,6 +7,8 @@ import { LibSQLStore } from '@mastra/libsql';
 import { caseStudyAgent } from './agents/case-study-agent';
 import { MongoDBVector } from '@mastra/mongodb';
 
+const ENV = process.env.NODE_ENV || "development";
+
 if (!process.env.MONGODB_URI) {
   throw new Error('MONGODB_URI environment variable is required');
 }
@@ -33,5 +35,13 @@ export const mastra = new Mastra({
 
    vectors: {
     mongodb: mongoVector,
+  },
+
+  server: {
+    cors: ENV === "development" ? {
+      origin: "*",
+      allowMethods: ["*"],
+      allowHeaders: ["*"],
+    } : undefined,
   },
 });
