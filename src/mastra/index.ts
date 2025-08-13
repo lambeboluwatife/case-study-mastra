@@ -4,7 +4,7 @@ dotenv.config();
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
-import { caseStudyAgent } from './agents/case-study-agent';
+import { caseStudyAgent, voiceAgent } from './agents/case-study-agent';
 import { MongoDBVector } from '@mastra/mongodb';
 
 const ENV = process.env.NODE_ENV || "development";
@@ -23,7 +23,7 @@ const mongoVector = new MongoDBVector({
 });
 
 export const mastra = new Mastra({
-  agents: { caseStudyAgent },
+  agents: { caseStudyAgent, voiceAgent },
   storage: new LibSQLStore({
     // stores telemetry, evals, ... into memory storage, if it needs to persist, change to file:../mastra.db
     url: ":memory:",
