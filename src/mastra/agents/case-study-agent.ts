@@ -8,7 +8,6 @@ import { google } from "@ai-sdk/google";
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore } from "@mastra/libsql";
-import mic from "mic";
 import player from "play-sound";
 import { searchGoogleTool, sendMailTool, createPDFTool } from "../tools";
 
