@@ -1,25 +1,25 @@
-import { OpenAIVoice } from "@mastra/voice-openai";
-import { createReadStream, createWriteStream } from "fs";
-import { PlayAIVoice } from "@mastra/voice-playai";
-import { GoogleVoice } from "@mastra/voice-google";
+// import { OpenAIVoice } from "@mastra/voice-openai";
+// import { createReadStream, createWriteStream } from "fs";
+// import { PlayAIVoice } from "@mastra/voice-playai";
+// import { GoogleVoice } from "@mastra/voice-google";
 // import { playAudio, getMicrophoneStream } from "@mastra/node-audio";
-import path from "path";
+// import path from "path";
 import { google } from "@ai-sdk/google";
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore } from "@mastra/libsql";
-import player from "play-sound";
+// import player from "play-sound";
 import { searchGoogleTool, sendMailTool, createPDFTool } from "../tools";
 
-const voice = new OpenAIVoice();
+// const voice = new OpenAIVoice();
 
-export const voiceAgent = new Agent({
-  name: "Voice Agent",
-  instructions:
-    "You are a voice assistant that can answer questions, perform tasks, and interact with users through voice.",
-  model: google("gemini-2.0-flash-exp"),
-  voice,
-});
+// export const voiceAgent = new Agent({
+//   name: "Voice Agent",
+//   instructions:
+//     "You are a voice assistant that can answer questions, perform tasks, and interact with users through voice.",
+//   model: google("gemini-2.0-flash-exp"),
+//   voice,
+// });
 
 export const caseStudyAgent = new Agent({
   name: "Case Study Agent",
@@ -82,17 +82,16 @@ Always analyze cases using this structured method:
 - ✅ Offer PDF + email delivery
 `,
   model: google("gemini-2.0-flash-exp"),
-  voice,
   tools: {
     searchGoogleTool,
     sendMailTool,
     createPDFTool,
   },
-  // memory: new Memory({
-  //   storage: new LibSQLStore({
-  //     url: "file:../mastra.db",
-  //   }),
-  // }),
+  memory: new Memory({
+    storage: new LibSQLStore({
+      url: "file:../mastra.db",
+    }),
+  }),
 });
 
 // const { text } = await voiceAgent.generate("tell me a long javascript joke");
