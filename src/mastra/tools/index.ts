@@ -9,9 +9,14 @@ import { cohere } from "@ai-sdk/cohere";
 import { rerank } from "@mastra/rag";
 import fs from "fs";
 import path from "path";
+import { dirname } from "path";
 import PDFDocument from "pdfkit";
 import { format } from "date-fns";
+import { fileURLToPath } from "url";
 import os from "os";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export const sendMailTool = createTool({
   id: "send-mail",
@@ -223,11 +228,10 @@ export const createPDFTool = createTool({
       const trimmed = line.trim();
 
       if (!trimmed) {
-        doc.moveDown(); // Blank line becomes paragraph break
+        doc.moveDown();
         return;
       }
 
-      // Handle bold headers (e.g., "**1. Title?**")
       if (/^\*\*(.+?)\*\*$/.test(trimmed)) {
         const match = trimmed.match(/^\*\*(.+?)\*\*$/);
         if (match) {
@@ -241,7 +245,6 @@ export const createPDFTool = createTool({
         }
       }
 
-      // Handle list items (e.g., "* **Bold label:** content")
       if (/^\* +\*\*(.+?)\*\*: (.+)/.test(trimmed)) {
         const match = trimmed.match(/^\* +\*\*(.+?)\*\*: (.+)/);
         if (match) {
@@ -254,20 +257,17 @@ export const createPDFTool = createTool({
         }
       }
 
-      // Handle generic bullets (e.g., "* Some plain point")
       if (/^\* +(.+)/.test(trimmed)) {
         const match = trimmed.match(/^\* +(.+)/);
         doc.font("Times-Roman").text("• " + match[1]);
         return;
       }
 
-      // Handle numbered headers like "1. What is...?"
       if (/^\d+\.\s+.+/.test(trimmed)) {
         doc.font("Times-Bold").fontSize(13).text(trimmed).moveDown(0.5);
         return;
       }
 
-      // Default paragraph
       doc.font("Times-Roman").fontSize(12).text(trimmed, {
         align: "justify",
         paragraphGap: 8,
@@ -285,3 +285,121 @@ export const createPDFTool = createTool({
     };
   },
 });
+
+// export const createPDFTool = createTool({
+//   id: "create-pdf",
+//   description: `Generates a visually formatted PDF document (bold text, headers, clean paragraphs) from the provided content.`,
+//   inputSchema: z.object({
+//     content: z.string().describe("The text content to include in the PDF"),
+//     title: z.string().describe("Title for the PDF document"),
+//   }),
+//   outputSchema: z.object({
+//     pdfUrl: z.string().describe("URL to the generated PDF document"),
+//     status: z.string().describe("Status of the PDF generation process"),
+//   }),
+//   execute: async ({ context }) => {
+//     const { content, title } = context;
+
+//     const documentsPath = path.join(os.homedir(), "Documents", "case-studies");
+//     if (!fs.existsSync(documentsPath)) {
+//       fs.mkdirSync(documentsPath, { recursive: true });
+//     }
+
+//     const safeFilename = title
+//       .toLowerCase()
+//       .replace(/\s+/g, "-")
+//       .replace(/[^\w\-]/g, "");
+//     const date = format(new Date(), "yyyy-MM-dd");
+//     const pdfPath = path.join(documentsPath, `${safeFilename}-${date}.pdf`);
+
+//     const doc = new PDFDocument({ margin: 50 });
+//     doc.pipe(fs.createWriteStream(pdfPath));
+
+//     // ✨ HEADER
+//     doc
+//       .fontSize(20)
+//       .font("Times-Bold")
+//       .text(title.toUpperCase(), { align: "center" })
+//       .moveDown(0.5);
+
+//     doc
+//       .fontSize(12)
+//       .font("Times-Italic")
+//       .text(`Generated on ${date}`, { align: "center" })
+//       .moveDown(1.5);
+
+//     // ✍🏽 AUTHOR
+//     doc
+//       .font("Times-Roman")
+//       .fontSize(12)
+//       .text("Author: L.B.D's Case Study Agent", { align: "center" })
+//       .moveDown(2);
+
+//     // 📝 ARTICLE BODY with improved markdown handling
+//     const lines = content.split("\n");
+//     lines.forEach((line) => {
+//       const trimmed = line.trim();
+
+//       if (!trimmed) {
+//         doc.moveDown(); // Blank line becomes paragraph break
+//         return;
+//       }
+
+//       // Handle bold headers (e.g., "**1. Title?**")
+//       if (/^\*\*(.+?)\*\*$/.test(trimmed)) {
+//         const match = trimmed.match(/^\*\*(.+?)\*\*$/);
+//         if (match) {
+//           doc
+//             .moveDown(0.5)
+//             .font("Times-Bold")
+//             .fontSize(13)
+//             .text(match[1], { align: "left" })
+//             .moveDown(0.5);
+//           return;
+//         }
+//       }
+
+//       // Handle list items (e.g., "* **Bold label:** content")
+//       if (/^\* +\*\*(.+?)\*\*: (.+)/.test(trimmed)) {
+//         const match = trimmed.match(/^\* +\*\*(.+?)\*\*: (.+)/);
+//         if (match) {
+//           doc
+//             .font("Times-Bold")
+//             .text("• " + match[1] + ": ", { continued: true })
+//             .font("Times-Roman")
+//             .text(match[2]);
+//           return;
+//         }
+//       }
+
+//       // Handle generic bullets (e.g., "* Some plain point")
+//       if (/^\* +(.+)/.test(trimmed)) {
+//         const match = trimmed.match(/^\* +(.+)/);
+//         doc.font("Times-Roman").text("• " + match[1]);
+//         return;
+//       }
+
+//       // Handle numbered headers like "1. What is...?"
+//       if (/^\d+\.\s+.+/.test(trimmed)) {
+//         doc.font("Times-Bold").fontSize(13).text(trimmed).moveDown(0.5);
+//         return;
+//       }
+
+//       // Default paragraph
+//       doc.font("Times-Roman").fontSize(12).text(trimmed, {
+//         align: "justify",
+//         paragraphGap: 8,
+//       });
+//     });
+
+//     doc.end();
+
+//     const pdfUrl = `file://${pdfPath}`;
+//     console.log("✅ PDF saved to:", pdfPath);
+
+//     return {
+//       pdfUrl,
+//       status: "PDF generated successfully",
+//     };
+//   },
+// });
